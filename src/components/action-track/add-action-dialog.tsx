@@ -53,6 +53,10 @@ export function AddActionDialog({
     setStatus("Open");
   };
 
+  useEffect(() => {
+    if (open) reset();
+  }, [open]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!description.trim()) return;
