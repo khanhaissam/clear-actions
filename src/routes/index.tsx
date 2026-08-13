@@ -83,10 +83,13 @@ function Index() {
           action.owner.toLowerCase().includes(term)
         );
       })
-      .sort(
-        (a, b) =>
-          new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
-      );
+      .sort((a, b) => {
+        const statusOrder = { Open: 0, "In Progress": 1, Completed: 2 };
+        if (statusOrder[a.status] !== statusOrder[b.status]) {
+          return statusOrder[a.status] - statusOrder[b.status];
+        }
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      });
   }, [actions, filters]);
 
   const handleAdd = (action: Omit<ActionItem, "id">) => {
