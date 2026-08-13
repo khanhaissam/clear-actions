@@ -30,8 +30,20 @@ export const OWNERS = [
   "Morgan Lee",
 ] as const;
 
+/**
+ * Calendar day of the given instant in UTC, as a local-midnight Date.
+ * Keeps server-rendered and client-rendered dates identical across timezones.
+ */
+export function utcToday(referenceDate = new Date()) {
+  return new Date(
+    referenceDate.getUTCFullYear(),
+    referenceDate.getUTCMonth(),
+    referenceDate.getUTCDate()
+  );
+}
+
 export function generateSampleActions(referenceDate = new Date()): ActionItem[] {
-  const today = startOfDay(referenceDate);
+  const today = utcToday(referenceDate);
   const d = (offset: number) => format(addDays(today, offset), "yyyy-MM-dd");
 
   return [
@@ -154,13 +166,13 @@ export function formatDueDate(dateString: string) {
 export function isOverdue(action: ActionItem, referenceDate = new Date()) {
   if (action.status === "Completed") return false;
   const due = startOfDay(new Date(action.dueDate + "T00:00:00"));
-  return isBefore(due, startOfDay(referenceDate));
+  return isBefore(due, utcToday(referenceDate));
 }
 
 export function isDueThisWeek(action: ActionItem, referenceDate = new Date()) {
   if (action.status === "Completed" || isOverdue(action, referenceDate)) return false;
   const due = startOfDay(new Date(action.dueDate + "T00:00:00"));
-  const today = startOfDay(referenceDate);
+  const today = utcToday(referenceDate);
   return isWithinInterval(due, { start: today, end: addDays(today, 6) });
 }
 
