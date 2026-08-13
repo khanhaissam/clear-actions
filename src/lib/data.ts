@@ -166,13 +166,13 @@ export function formatDueDate(dateString: string) {
 export function isOverdue(action: ActionItem, referenceDate = new Date()) {
   if (action.status === "Completed") return false;
   const due = startOfDay(new Date(action.dueDate + "T00:00:00"));
-  return isBefore(due, startOfDay(referenceDate));
+  return isBefore(due, utcToday(referenceDate));
 }
 
 export function isDueThisWeek(action: ActionItem, referenceDate = new Date()) {
   if (action.status === "Completed" || isOverdue(action, referenceDate)) return false;
   const due = startOfDay(new Date(action.dueDate + "T00:00:00"));
-  const today = startOfDay(referenceDate);
+  const today = utcToday(referenceDate);
   return isWithinInterval(due, { start: today, end: addDays(today, 6) });
 }
 

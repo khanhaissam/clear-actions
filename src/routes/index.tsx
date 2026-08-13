@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import {
   computeSummary,
   generateSampleActions,
+  utcToday,
   type ActionItem,
 } from "@/lib/data";
 
@@ -57,7 +58,7 @@ function Index() {
     owner: "",
   });
 
-  const today = useMemo(() => new Date(), []);
+  const today = useMemo(() => utcToday(), []);
   const summary = useMemo(
     () => computeSummary(actions, today),
     [actions, today]
