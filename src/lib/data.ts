@@ -30,8 +30,20 @@ export const OWNERS = [
   "Morgan Lee",
 ] as const;
 
+/**
+ * Calendar day of the given instant in UTC, as a local-midnight Date.
+ * Keeps server-rendered and client-rendered dates identical across timezones.
+ */
+export function utcToday(referenceDate = new Date()) {
+  return new Date(
+    referenceDate.getUTCFullYear(),
+    referenceDate.getUTCMonth(),
+    referenceDate.getUTCDate()
+  );
+}
+
 export function generateSampleActions(referenceDate = new Date()): ActionItem[] {
-  const today = startOfDay(referenceDate);
+  const today = utcToday(referenceDate);
   const d = (offset: number) => format(addDays(today, offset), "yyyy-MM-dd");
 
   return [
