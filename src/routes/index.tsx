@@ -49,10 +49,20 @@ interface Filters {
 }
 
 function Index() {
-  const [actions, setActions] = useState<ActionItem[]>(() =>
-    generateSampleActions()
-  );
+  const [actions, setActions] = useState<ActionItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+  const [editing, setEditing] = useState<ActionItem | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  useEffect(() => {
+    setActions(loadActions());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (hydrated) saveActions(actions);
+  }, [actions, hydrated]);
+
   const [filters, setFilters] = useState<Filters>({
     search: "",
     status: "",
