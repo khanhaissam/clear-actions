@@ -1,18 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { AddActionDialog } from "@/components/action-track/add-action-dialog";
+import { EditActionDialog } from "@/components/action-track/edit-action-dialog";
 import { ActionFilters } from "@/components/action-track/action-filters";
 import { ActionTable } from "@/components/action-track/action-table";
 import { SummaryCards } from "@/components/action-track/summary-cards";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   computeSummary,
-  generateSampleActions,
   utcToday,
   type ActionItem,
 } from "@/lib/data";
+import { loadActions, saveActions } from "@/lib/storage";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -47,10 +49,20 @@ interface Filters {
 }
 
 function Index() {
-  const [actions, setActions] = useState<ActionItem[]>(() =>
-    generateSampleActions()
-  );
+  const [actions, setActions] = useState<ActionItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+  const [editing, setEditing] = useState<ActionItem | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  useEffect(() => {
+    setActions(loadActions());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (hydrated) saveActions(actions);
+  }, [actions, hydrated]);
+
   const [filters, setFilters] = useState<Filters>({
     search: "",
     status: "",
@@ -102,6 +114,24 @@ function Index() {
     setFilters({ search: "", status: "", priority: "", owner: "" });
   };
 
+  const handleSave = (updated: ActionItem) => {
+    setActions((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+  };
+
+  const handleDelete = (id: string) => {
+    setActions((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  const handleToggleComplete = (action: ActionItem) => {
+    setActions((prev) =>
+      prev.map((a) =>
+        a.id === action.id
+          ? { ...a, status: a.status === "Completed" ? "Open" : "Completed" }
+          : a
+      )
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card">
@@ -122,23 +152,50 @@ function Index() {
       </header>
 
       <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
-        <SummaryCards counts={summary} />
+        {hydrated ? (
+          <>
+            <SummaryCards counts={summary} />
 
-        <section className="space-y-4">
-          <ActionFilters
-            filters={filters}
-            setFilters={setFilters}
-            owners={owners}
-            onClear={handleClearFilters}
-          />
-          <ActionTable actions={filteredActions} today={today} />
-        </section>
+            <section className="space-y-4">
+              <ActionFilters
+                filters={filters}
+                setFilters={setFilters}
+                owners={owners}
+                onClear={handleClearFilters}
+              />
+              <ActionTable
+                actions={filteredActions}
+                today={today}
+                onEdit={setEditing}
+                onToggleComplete={handleToggleComplete}
+              />
+            </section>
+          </>
+        ) : (
+          <div className="space-y-8">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+              {[0, 1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-28 w-full rounded-xl" />
+              ))}
+            </div>
+            <Skeleton className="h-96 w-full rounded-md" />
+          </div>
+        )}
       </main>
 
       <AddActionDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onAdd={handleAdd}
+      />
+
+      <EditActionDialog
+        action={editing}
+        onOpenChange={(open) => {
+          if (!open) setEditing(null);
+        }}
+        onSave={handleSave}
+        onDelete={handleDelete}
       />
     </div>
   );

@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -9,10 +10,13 @@ import {
 } from "@/components/ui/table";
 import { formatDueDate, isOverdue, type ActionItem, type ActionPriority, type ActionStatus } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { CheckCircle2, Pencil, RotateCcw } from "lucide-react";
 
 interface ActionTableProps {
   actions: ActionItem[];
   today: Date;
+  onEdit: (action: ActionItem) => void;
+  onToggleComplete: (action: ActionItem) => void;
 }
 
 function statusVariant(status: ActionStatus) {
@@ -37,7 +41,12 @@ function priorityVariant(priority: ActionPriority) {
   }
 }
 
-export function ActionTable({ actions, today }: ActionTableProps) {
+export function ActionTable({
+  actions,
+  today,
+  onEdit,
+  onToggleComplete,
+}: ActionTableProps) {
   if (actions.length === 0) {
     return (
       <div className="rounded-md border py-12 text-center text-sm text-muted-foreground">
@@ -57,6 +66,7 @@ export function ActionTable({ actions, today }: ActionTableProps) {
             <TableHead>Due Date</TableHead>
             <TableHead>Priority</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -67,7 +77,9 @@ export function ActionTable({ actions, today }: ActionTableProps) {
             return (
               <TableRow
                 key={action.id}
+                onClick={() => onEdit(action)}
                 className={cn(
+                  "cursor-pointer",
                   overdue && "border-l-4 border-l-destructive bg-destructive/[0.03]",
                   completed && "text-muted-foreground"
                 )}
@@ -96,6 +108,33 @@ export function ActionTable({ actions, today }: ActionTableProps) {
                   <Badge variant={statusVariant(action.status)}>
                     {action.status}
                   </Badge>
+                </TableCell>
+                <TableCell
+                  className="text-right whitespace-nowrap"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={completed ? "Reopen action" : "Mark as completed"}
+                    title={completed ? "Reopen action" : "Mark as completed"}
+                    onClick={() => onToggleComplete(action)}
+                  >
+                    {completed ? (
+                      <RotateCcw className="h-4 w-4" />
+                    ) : (
+                      <CheckCircle2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Edit action"
+                    title="Edit action"
+                    onClick={() => onEdit(action)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             );
