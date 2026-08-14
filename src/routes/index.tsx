@@ -114,6 +114,24 @@ function Index() {
     setFilters({ search: "", status: "", priority: "", owner: "" });
   };
 
+  const handleSave = (updated: ActionItem) => {
+    setActions((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+  };
+
+  const handleDelete = (id: string) => {
+    setActions((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  const handleToggleComplete = (action: ActionItem) => {
+    setActions((prev) =>
+      prev.map((a) =>
+        a.id === action.id
+          ? { ...a, status: a.status === "Completed" ? "Open" : "Completed" }
+          : a
+      )
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card">
