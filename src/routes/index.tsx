@@ -152,23 +152,50 @@ function Index() {
       </header>
 
       <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
-        <SummaryCards counts={summary} />
+        {hydrated ? (
+          <>
+            <SummaryCards counts={summary} />
 
-        <section className="space-y-4">
-          <ActionFilters
-            filters={filters}
-            setFilters={setFilters}
-            owners={owners}
-            onClear={handleClearFilters}
-          />
-          <ActionTable actions={filteredActions} today={today} />
-        </section>
+            <section className="space-y-4">
+              <ActionFilters
+                filters={filters}
+                setFilters={setFilters}
+                owners={owners}
+                onClear={handleClearFilters}
+              />
+              <ActionTable
+                actions={filteredActions}
+                today={today}
+                onEdit={setEditing}
+                onToggleComplete={handleToggleComplete}
+              />
+            </section>
+          </>
+        ) : (
+          <div className="space-y-8">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+              {[0, 1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-28 w-full rounded-xl" />
+              ))}
+            </div>
+            <Skeleton className="h-96 w-full rounded-md" />
+          </div>
+        )}
       </main>
 
       <AddActionDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onAdd={handleAdd}
+      />
+
+      <EditActionDialog
+        action={editing}
+        onOpenChange={(open) => {
+          if (!open) setEditing(null);
+        }}
+        onSave={handleSave}
+        onDelete={handleDelete}
       />
     </div>
   );
