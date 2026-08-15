@@ -25,6 +25,7 @@ import {
   type ActionStatus,
 } from "@/lib/data";
 import { format } from "date-fns";
+import { validateActionForm, type ActionFormErrors } from "@/lib/validation";
 
 interface AddActionDialogProps {
   open: boolean;
@@ -43,6 +44,7 @@ export function AddActionDialog({
   const [dueDate, setDueDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [priority, setPriority] = useState<ActionPriority>("Medium");
   const [status, setStatus] = useState<ActionStatus>("Open");
+  const [errors, setErrors] = useState<ActionFormErrors>({});
 
   const reset = () => {
     setDescription("");
@@ -51,6 +53,7 @@ export function AddActionDialog({
     setDueDate(format(new Date(), "yyyy-MM-dd"));
     setPriority("Medium");
     setStatus("Open");
+    setErrors({});
   };
 
   useEffect(() => {
@@ -59,16 +62,23 @@ export function AddActionDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!description.trim()) return;
 
-    onAdd({
-      description: description.trim(),
+    const result = validateActionForm({
+      description,
       meeting,
       owner,
       dueDate,
       priority,
       status,
     });
+
+    if (!result.success) {
+      setErrors(result.errors);
+      return;
+    }
+
+    setErrors({});
+    onAdd(result.data);
     reset();
     onOpenChange(false);
   };
@@ -76,7 +86,7 @@ export function AddActionDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
-        <form onSubmit={handleSubmit} id="add-action-form">
+        <form onSubmit={handleSubmit} id="add-action-form" noValidate>
           <DialogHeader>
             <DialogTitle>Add Action</DialogTitle>
             <DialogDescription>
@@ -92,8 +102,14 @@ export function AddActionDialog({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="What needs to be done?"
-                required
+                aria-invalid={!!errors.description}
+                aria-describedby={errors.description ? "action-description-error" : undefined}
               />
+              {errors.description && (
+                <p id="action-description-error" className="text-sm text-destructive">
+                  {errors.description}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -111,6 +127,9 @@ export function AddActionDialog({
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.meeting && (
+                  <p className="text-sm text-destructive">{errors.meeting}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
@@ -127,6 +146,9 @@ export function AddActionDialog({
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.owner && (
+                  <p className="text-sm text-destructive">{errors.owner}</p>
+                )}
               </div>
             </div>
 
@@ -138,8 +160,11 @@ export function AddActionDialog({
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  required
+                  aria-invalid={!!errors.dueDate}
                 />
+                {errors.dueDate && (
+                  <p className="text-sm text-destructive">{errors.dueDate}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
@@ -157,6 +182,9 @@ export function AddActionDialog({
                     <SelectItem value="Low">Low</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.priority && (
+                  <p className="text-sm text-destructive">{errors.priority}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
@@ -174,6 +202,9 @@ export function AddActionDialog({
                     <SelectItem value="Completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.status && (
+                  <p className="text-sm text-destructive">{errors.status}</p>
+                )}
               </div>
             </div>
           </div>

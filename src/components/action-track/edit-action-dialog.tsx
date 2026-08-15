@@ -35,6 +35,7 @@ import {
   type ActionStatus,
 } from "@/lib/data";
 import { Trash2 } from "lucide-react";
+import { validateActionForm, type ActionFormErrors } from "@/lib/validation";
 
 interface EditActionDialogProps {
   action: ActionItem | null;
@@ -56,6 +57,7 @@ export function EditActionDialog({
   const [priority, setPriority] = useState<ActionPriority>("Medium");
   const [status, setStatus] = useState<ActionStatus>("Open");
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [errors, setErrors] = useState<ActionFormErrors>({});
 
   useEffect(() => {
     if (!action) return;
@@ -66,6 +68,7 @@ export function EditActionDialog({
     setPriority(action.priority);
     setStatus(action.status);
     setConfirmOpen(false);
+    setErrors({});
   }, [action]);
 
   const meetingOptions = Array.from(
@@ -77,23 +80,31 @@ export function EditActionDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!action || !description.trim()) return;
-    onSave({
-      ...action,
-      description: description.trim(),
+    if (!action) return;
+
+    const result = validateActionForm({
+      description,
       meeting,
       owner,
       dueDate,
       priority,
       status,
     });
+
+    if (!result.success) {
+      setErrors(result.errors);
+      return;
+    }
+
+    setErrors({});
+    onSave({ ...action, ...result.data });
     onOpenChange(false);
   };
 
   return (
     <Dialog open={!!action} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <DialogHeader>
             <DialogTitle>Edit Action</DialogTitle>
             <DialogDescription>
@@ -108,8 +119,14 @@ export function EditActionDialog({
                 id="edit-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                required
+                aria-invalid={!!errors.description}
+                aria-describedby={errors.description ? "edit-description-error" : undefined}
               />
+              {errors.description && (
+                <p id="edit-description-error" className="text-sm text-destructive">
+                  {errors.description}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -127,6 +144,9 @@ export function EditActionDialog({
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.meeting && (
+                  <p className="text-sm text-destructive">{errors.meeting}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
@@ -143,6 +163,9 @@ export function EditActionDialog({
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.owner && (
+                  <p className="text-sm text-destructive">{errors.owner}</p>
+                )}
               </div>
             </div>
 
@@ -154,8 +177,11 @@ export function EditActionDialog({
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  required
+                  aria-invalid={!!errors.dueDate}
                 />
+                {errors.dueDate && (
+                  <p className="text-sm text-destructive">{errors.dueDate}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
@@ -173,6 +199,9 @@ export function EditActionDialog({
                     <SelectItem value="Low">Low</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.priority && (
+                  <p className="text-sm text-destructive">{errors.priority}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
@@ -190,6 +219,9 @@ export function EditActionDialog({
                     <SelectItem value="Completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.status && (
+                  <p className="text-sm text-destructive">{errors.status}</p>
+                )}
               </div>
             </div>
           </div>
