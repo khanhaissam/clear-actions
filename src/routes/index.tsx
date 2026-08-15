@@ -181,6 +181,9 @@ function Index() {
                 hasFilters={hasActiveFilters}
                 onClearFilters={handleClearFilters}
               />
+              <div className="flex justify-end pt-2">
+                <ResetSampleData onReset={handleReset} />
+              </div>
             </section>
           </>
         ) : (
