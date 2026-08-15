@@ -110,6 +110,10 @@ function Index() {
     setActions((prev) => [newAction, ...prev]);
   };
 
+  const hasActiveFilters = Boolean(
+    filters.search || filters.status || filters.priority || filters.owner
+  );
+
   const handleClearFilters = () => {
     setFilters({ search: "", status: "", priority: "", owner: "" });
   };
@@ -168,6 +172,8 @@ function Index() {
                 today={today}
                 onEdit={setEditing}
                 onToggleComplete={handleToggleComplete}
+                hasFilters={hasActiveFilters}
+                onClearFilters={handleClearFilters}
               />
             </section>
           </>
