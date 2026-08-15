@@ -23,3 +23,14 @@ export function saveActions(actions: ActionItem[]) {
     /* storage unavailable — ignore */
   }
 }
+
+export function resetActions(): ActionItem[] {
+  if (typeof window !== "undefined") {
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* storage unavailable — ignore */
+    }
+  }
+  return generateSampleActions();
+}
