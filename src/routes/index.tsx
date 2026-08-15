@@ -6,6 +6,7 @@ import { AddActionDialog } from "@/components/action-track/add-action-dialog";
 import { EditActionDialog } from "@/components/action-track/edit-action-dialog";
 import { ActionFilters } from "@/components/action-track/action-filters";
 import { ActionTable } from "@/components/action-track/action-table";
+import { ResetSampleData } from "@/components/action-track/reset-sample-data";
 import { SummaryCards } from "@/components/action-track/summary-cards";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,7 +15,7 @@ import {
   utcToday,
   type ActionItem,
 } from "@/lib/data";
-import { loadActions, saveActions } from "@/lib/storage";
+import { loadActions, resetActions, saveActions } from "@/lib/storage";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -136,6 +137,11 @@ function Index() {
     );
   };
 
+  const handleReset = () => {
+    setActions(resetActions());
+    handleClearFilters();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card">
@@ -175,6 +181,9 @@ function Index() {
                 hasFilters={hasActiveFilters}
                 onClearFilters={handleClearFilters}
               />
+              <div className="flex justify-end pt-2">
+                <ResetSampleData onReset={handleReset} />
+              </div>
             </section>
           </>
         ) : (
