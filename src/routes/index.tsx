@@ -137,6 +137,11 @@ function Index() {
     );
   };
 
+  const handleReset = () => {
+    setActions(resetActions());
+    handleClearFilters();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card">
