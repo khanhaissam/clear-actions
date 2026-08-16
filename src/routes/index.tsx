@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   computeSummary,
+  isOverdue,
   utcToday,
   type ActionItem,
 } from "@/lib/data";
@@ -70,6 +71,7 @@ function Index() {
     priority: "",
     owner: "",
   });
+  const [overdueOnly, setOverdueOnly] = useState(false);
 
   const today = useMemo(() => utcToday(), []);
   const summary = useMemo(
@@ -86,6 +88,7 @@ function Index() {
     const term = filters.search.trim().toLowerCase();
     return actions
       .filter((action) => {
+        if (overdueOnly && !isOverdue(action, today)) return false;
         if (filters.status && action.status !== filters.status) return false;
         if (filters.priority && action.priority !== filters.priority)
           return false;
@@ -104,7 +107,7 @@ function Index() {
         }
         return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
       });
-  }, [actions, filters]);
+  }, [actions, filters, overdueOnly, today]);
 
   const handleAdd = (action: Omit<ActionItem, "id">) => {
     const newAction: ActionItem = { ...action, id: String(Date.now()) };
@@ -112,11 +115,16 @@ function Index() {
   };
 
   const hasActiveFilters = Boolean(
-    filters.search || filters.status || filters.priority || filters.owner
+    filters.search || filters.status || filters.priority || filters.owner || overdueOnly
   );
 
   const handleClearFilters = () => {
     setFilters({ search: "", status: "", priority: "", owner: "" });
+    setOverdueOnly(false);
+  };
+
+  const handleOverdueToggle = () => {
+    setOverdueOnly((prev) => !prev);
   };
 
   const handleSave = (updated: ActionItem) => {
@@ -164,7 +172,11 @@ function Index() {
       <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
         {hydrated ? (
           <>
-            <SummaryCards counts={summary} />
+            <SummaryCards
+              counts={summary}
+              overdueActive={overdueOnly}
+              onOverdueClick={handleOverdueToggle}
+            />
 
             <section className="space-y-4">
               <ActionFilters
