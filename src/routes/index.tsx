@@ -72,7 +72,9 @@ function Index() {
     priority: "",
     owner: "",
   });
-  const [overdueOnly, setOverdueOnly] = useState(false);
+  const [activeKPI, setActiveKPI] = useState<
+    "open" | "overdue" | "dueThisWeek" | "completed" | null
+  >(null);
 
   const today = useMemo(() => utcToday(), []);
   const summary = useMemo(
