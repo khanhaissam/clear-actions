@@ -71,6 +71,7 @@ function Index() {
     priority: "",
     owner: "",
   });
+  const [overdueOnly, setOverdueOnly] = useState(false);
 
   const today = useMemo(() => utcToday(), []);
   const summary = useMemo(
