@@ -123,16 +123,16 @@ function Index() {
   };
 
   const hasActiveFilters = Boolean(
-    filters.search || filters.status || filters.priority || filters.owner || overdueOnly
+    filters.search || filters.status || filters.priority || filters.owner || activeKPI
   );
 
   const handleClearFilters = () => {
     setFilters({ search: "", status: "", priority: "", owner: "" });
-    setOverdueOnly(false);
+    setActiveKPI(null);
   };
 
-  const handleOverdueToggle = () => {
-    setOverdueOnly((prev) => !prev);
+  const handleCardClick = (card: "open" | "overdue" | "dueThisWeek" | "completed") => {
+    setActiveKPI((prev) => (prev === card ? null : card));
   };
 
   const handleSave = (updated: ActionItem) => {
