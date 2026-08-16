@@ -182,8 +182,8 @@ function Index() {
           <>
             <SummaryCards
               counts={summary}
-              overdueActive={overdueOnly}
-              onOverdueClick={handleOverdueToggle}
+              activeCard={activeKPI}
+              onCardClick={handleCardClick}
             />
 
             <section className="space-y-4">
