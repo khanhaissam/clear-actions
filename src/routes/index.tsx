@@ -88,6 +88,7 @@ function Index() {
     const term = filters.search.trim().toLowerCase();
     return actions
       .filter((action) => {
+        if (overdueOnly && !isOverdue(action, today)) return false;
         if (filters.status && action.status !== filters.status) return false;
         if (filters.priority && action.priority !== filters.priority)
           return false;
@@ -106,7 +107,7 @@ function Index() {
         }
         return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
       });
-  }, [actions, filters]);
+  }, [actions, filters, overdueOnly, today]);
 
   const handleAdd = (action: Omit<ActionItem, "id">) => {
     const newAction: ActionItem = { ...action, id: String(Date.now()) };
