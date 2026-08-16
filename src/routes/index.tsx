@@ -115,11 +115,16 @@ function Index() {
   };
 
   const hasActiveFilters = Boolean(
-    filters.search || filters.status || filters.priority || filters.owner
+    filters.search || filters.status || filters.priority || filters.owner || overdueOnly
   );
 
   const handleClearFilters = () => {
     setFilters({ search: "", status: "", priority: "", owner: "" });
+    setOverdueOnly(false);
+  };
+
+  const handleOverdueToggle = () => {
+    setOverdueOnly((prev) => !prev);
   };
 
   const handleSave = (updated: ActionItem) => {
