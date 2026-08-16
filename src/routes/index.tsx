@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   computeSummary,
+  isDueThisWeek,
   isOverdue,
   utcToday,
   type ActionItem,
@@ -71,7 +72,9 @@ function Index() {
     priority: "",
     owner: "",
   });
-  const [overdueOnly, setOverdueOnly] = useState(false);
+  const [activeKPI, setActiveKPI] = useState<
+    "open" | "overdue" | "dueThisWeek" | "completed" | null
+  >(null);
 
   const today = useMemo(() => utcToday(), []);
   const summary = useMemo(
@@ -88,7 +91,12 @@ function Index() {
     const term = filters.search.trim().toLowerCase();
     return actions
       .filter((action) => {
-        if (overdueOnly && !isOverdue(action, today)) return false;
+        if (activeKPI === "open" && action.status === "Completed") return false;
+        if (activeKPI === "overdue" && !isOverdue(action, today)) return false;
+        if (activeKPI === "dueThisWeek" && !isDueThisWeek(action, today))
+          return false;
+        if (activeKPI === "completed" && action.status !== "Completed")
+          return false;
         if (filters.status && action.status !== filters.status) return false;
         if (filters.priority && action.priority !== filters.priority)
           return false;
@@ -107,7 +115,7 @@ function Index() {
         }
         return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
       });
-  }, [actions, filters, overdueOnly, today]);
+  }, [actions, filters, activeKPI, today]);
 
   const handleAdd = (action: Omit<ActionItem, "id">) => {
     const newAction: ActionItem = { ...action, id: String(Date.now()) };
@@ -115,16 +123,16 @@ function Index() {
   };
 
   const hasActiveFilters = Boolean(
-    filters.search || filters.status || filters.priority || filters.owner || overdueOnly
+    filters.search || filters.status || filters.priority || filters.owner || activeKPI
   );
 
   const handleClearFilters = () => {
     setFilters({ search: "", status: "", priority: "", owner: "" });
-    setOverdueOnly(false);
+    setActiveKPI(null);
   };
 
-  const handleOverdueToggle = () => {
-    setOverdueOnly((prev) => !prev);
+  const handleCardClick = (card: "open" | "overdue" | "dueThisWeek" | "completed") => {
+    setActiveKPI((prev) => (prev === card ? null : card));
   };
 
   const handleSave = (updated: ActionItem) => {
@@ -174,8 +182,8 @@ function Index() {
           <>
             <SummaryCards
               counts={summary}
-              overdueActive={overdueOnly}
-              onOverdueClick={handleOverdueToggle}
+              activeCard={activeKPI}
+              onCardClick={handleCardClick}
             />
 
             <section className="space-y-4">

@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { AlertCircle, CalendarDays, CheckCircle2, ListTodo } from "lucide-react";
 
+export type SummaryCardType = "open" | "overdue" | "dueThisWeek" | "completed";
+
 interface SummaryCounts {
   open: number;
   overdue: number;
@@ -11,43 +13,54 @@ interface SummaryCounts {
 
 interface SummaryCardsProps {
   counts: SummaryCounts;
-  overdueActive?: boolean;
-  onOverdueClick?: () => void;
+  activeCard?: SummaryCardType | null;
+  onCardClick?: (card: SummaryCardType) => void;
 }
 
 export function SummaryCards({
   counts,
-  overdueActive = false,
-  onOverdueClick,
+  activeCard = null,
+  onCardClick,
 }: SummaryCardsProps) {
-  const cards = [
+  const cards: {
+    id: SummaryCardType;
+    title: string;
+    value: number;
+    icon: typeof ListTodo;
+    tone: string;
+    activeRing: string;
+  }[] = [
     {
+      id: "open",
       title: "Open Actions",
       value: counts.open,
       icon: ListTodo,
       tone: "text-foreground",
-      clickable: false,
+      activeRing: "ring-foreground/30",
     },
     {
+      id: "overdue",
       title: "Overdue",
       value: counts.overdue,
       icon: AlertCircle,
       tone: "text-destructive",
-      clickable: true,
+      activeRing: "ring-destructive",
     },
     {
+      id: "dueThisWeek",
       title: "Due This Week",
       value: counts.dueThisWeek,
       icon: CalendarDays,
       tone: "text-primary",
-      clickable: false,
+      activeRing: "ring-primary/50",
     },
     {
+      id: "completed",
       title: "Completed",
       value: counts.completed,
       icon: CheckCircle2,
       tone: "text-muted-foreground",
-      clickable: false,
+      activeRing: "ring-muted-foreground/40",
     },
   ];
 
@@ -55,39 +68,26 @@ export function SummaryCards({
     <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       {cards.map((card) => {
         const Icon = card.icon;
-        const isOverdueCard = card.clickable;
+        const isActive = activeCard === card.id;
 
-        const cardBody = (
+        return (
           <Card
+            key={card.id}
             className={cn(
-              "transition-colors",
-              isOverdueCard &&
-                "cursor-pointer hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              isOverdueCard &&
-                overdueActive &&
-                "border-destructive bg-destructive/[0.05] ring-1 ring-destructive"
+              "cursor-pointer transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              isActive && `bg-accent/30 ${card.activeRing} ring-1`
             )}
-            tabIndex={isOverdueCard ? 0 : undefined}
-            role={isOverdueCard ? "button" : undefined}
-            aria-pressed={isOverdueCard ? overdueActive : undefined}
-            aria-label={
-              isOverdueCard
-                ? overdueActive
-                  ? "Show all actions"
-                  : "Show only overdue actions"
-                : undefined
-            }
-            onClick={isOverdueCard ? onOverdueClick : undefined}
-            onKeyDown={
-              isOverdueCard
-                ? (e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      onOverdueClick?.();
-                    }
-                  }
-                : undefined
-            }
+            role="button"
+            tabIndex={0}
+            aria-pressed={isActive}
+            aria-label={`${isActive ? "Hide" : "Show only"} ${card.title.toLowerCase()} actions`}
+            onClick={() => onCardClick?.(card.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onCardClick?.(card.id);
+              }
+            }}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -102,8 +102,6 @@ export function SummaryCards({
             </CardContent>
           </Card>
         );
-
-        return <div key={card.title}>{cardBody}</div>;
       })}
     </div>
   );
